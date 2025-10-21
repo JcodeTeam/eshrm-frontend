@@ -31,7 +31,7 @@ export default (app) => {
             resave: false,
             saveUninitialized: false,
             cookie: {
-                secure: false, // set true jika https
+                secure: true, // set true jika https
                 httpOnly: true,
                 maxAge: 1000 * 60 * 60 * 24,
             }

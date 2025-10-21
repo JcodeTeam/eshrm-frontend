@@ -12,6 +12,9 @@ appMiddleware(app);
 
 app.use('/api', faceRoutes);
 app.use('/api/auth', authRoutes);
+app.get('/', (req, res) => {
+    res.send('Express is running...');
+});
 
 app.listen(port, async () => {
     await connectDB();

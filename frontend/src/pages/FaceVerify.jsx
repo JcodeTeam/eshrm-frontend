@@ -1,18 +1,16 @@
 import { useState, useRef } from "react";
 import Webcam from "react-webcam";
-import API from "../api";
+import API from "../fastapi";
 import LogoutButton from "../components/LogoutButton";
 
 export default function FaceVerify() {
     const webcamRef = useRef(null);
     const [message, setMessage] = useState("");
-    const [confidence, setConfidence] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const captureAndVerify = async () => {
         setLoading(true);
         setMessage("");
-        setConfidence(null);
 
         try {
             const imageSrc = webcamRef.current.getScreenshot();
@@ -23,15 +21,17 @@ export default function FaceVerify() {
                 return;
             }
 
-            const res = await API.post(
-                "/verify",
-                { image: imageSrc },
-                { headers: { "Content-Type": "application/json" } }
-            );
+            const formData = new FormData();
+            formData.append("image_base64", imageSrc); 
 
-            if (res.data.success) {
+            const res = await API.post("/recognize", formData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            if (res.data.verified) {
                 setMessage(res.data.message);
-                setConfidence(res.data.confidence);
             } else {
                 setMessage(res.data.message || "Verifikasi gagal.");
             }
@@ -42,6 +42,7 @@ export default function FaceVerify() {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 px-4 transition-colors duration-300">
@@ -83,14 +84,6 @@ export default function FaceVerify() {
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                             {message}
                         </h3>
-                        {confidence && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                Tingkat keyakinan:{" "}
-                                <span className="font-medium text-blue-600 dark:text-blue-400">
-                                    {confidence}%
-                                </span>
-                            </p>
-                        )}
                     </div>
                 )}
 

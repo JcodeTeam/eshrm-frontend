@@ -2,33 +2,52 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema({
     user: {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
-    timestamp: {
+    date: {
         type: Date,
-        default: Date.now,
+        required: true,
     },
     status: {
         type: String,
         enum: ["present", "absent", "late"],
         default: "present",
     },
-    location: {
+    clockIn: {
+        type: Date,
+        required: true,
+    },
+    clockInLocation: {
         type: {
-            type: String, 
-            enum: ['Point'], 
+            type: String,
+            enum: ['Point'],
             required: true
         },
         coordinates: {
-            type: [Number], 
+            type: [Number],
             required: true
+        }
+    },
+    clockOut: {
+        type: Date,
+    },
+    clockOutLocation: {
+        type: {
+            type: String,
+            enum: ['Point'],
+        },
+        coordinates: {
+            type: [Number],
         }
     }
 }, { timestamps: true });
 
-attendanceSchema.index({ location: '2dsphere' });
+attendanceSchema.index({ user: 1, date: 1 }, { unique: true });
+
+attendanceSchema.index({ clockInLocation: '2dsphere' });
+attendanceSchema.index({ clockOutLocation: '2dsphere' });
 
 const Attendance = mongoose.model("Attendance", attendanceSchema);
 

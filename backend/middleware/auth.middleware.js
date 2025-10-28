@@ -16,13 +16,10 @@ export const authorize = async (req, res, next) => {
 
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(decoded.id);
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User tidak ditemukan" });
-        }
-        if (user.status !== 'active') {
-            return res.status(403).json({ success: false, message: "Akun Anda belum diaktifkan oleh admin" });
         }
 
         req.user = user;

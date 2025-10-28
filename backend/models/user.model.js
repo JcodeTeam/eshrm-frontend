@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
         url: String,
         public_id: String
     },
+    role: {
+        type: String,
+        enum: ['admin', 'user'],
+        default: 'user',
+    }
 }, { timestamps: true });
 
 // Hash password sebelum simpan

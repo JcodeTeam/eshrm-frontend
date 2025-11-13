@@ -8,7 +8,7 @@ export const register = async (req, res) => {
     session.startTransaction();
 
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -21,6 +21,7 @@ export const register = async (req, res) => {
             name,
             email,
             password,
+            role,
         });
         await newUser.save({ session });
 
@@ -35,6 +36,7 @@ export const register = async (req, res) => {
                 id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
+                role: newUser.role
             }
         });
 

@@ -11,6 +11,6 @@ export default defineConfig({
   server: {
     port: 5173, 
     host: true, 
-    allowedHosts: ['eshrm.jcode.my.id', 'eshrm-backend.jcode.my.id', 'api.jcode.my.id'], 
+    allowedHosts: ['eshrm.jcode.my.id', 'eshrm-backend.jcode.my.id', 'api.jcode.my.id', 'localhost:5000', 'localhost:8000'], 
   },
 })

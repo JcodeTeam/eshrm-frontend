@@ -20,7 +20,7 @@ export default (app) => {
     app.use(express.urlencoded({ extended: true, limit: '50mb' }));
     app.use(express.static("public"));
     app.use(cors({
-        origin: [FRONTEND_URL, SERVER_URL, LBPH_URL],
+        origin: [FRONTEND_URL, SERVER_URL, LBPH_URL, 'http://localhost:5000', 'http://localhost:8000', 'http://localhost:5173'],
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true,
     }));
@@ -31,7 +31,7 @@ export default (app) => {
             resave: false,
             saveUninitialized: false,
             cookie: {
-                secure: true, // set true jika https
+                secure: false, // set true jika https
                 httpOnly: true,
                 maxAge: 1000 * 60 * 60 * 24,
             }

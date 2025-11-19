@@ -8,7 +8,7 @@ import attendanceRoutes from './routes/attendance.routes.js';
 
 const app = express();
 const port = PORT || 5000;
-const host = '192.168.1.14';
+const host = '0.0.0.0';
 
 appMiddleware(app);
 

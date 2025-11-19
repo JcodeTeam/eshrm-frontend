@@ -8,7 +8,7 @@ import attendanceRoutes from './routes/attendance.routes.js';
 
 const app = express();
 const port = PORT || 5000;
-const host = '192.168.1.14';
+const host = '0.0.0.0';
 
 appMiddleware(app);
 
@@ -22,5 +22,5 @@ app.get('/', (req, res) => {
 // Tambahkan '0.0.0.0' agar bisa diakses dari luar (HP)
 app.listen(port, '0.0.0.0', async () => {
     await connectDB();
-    console.log(`🚀 Server berjalan di http://0.0.0.0:${port}`);
+    console.log(`🚀 Server berjalan di http://${host}:${port}`);
 });

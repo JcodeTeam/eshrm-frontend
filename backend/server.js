@@ -19,8 +19,7 @@ app.get('/', (req, res) => {
     res.send('Express is running...');
 });
 
-// Tambahkan '0.0.0.0' agar bisa diakses dari luar (HP)
-app.listen(port, '0.0.0.0', async () => {
+app.listen(port, host, async () => {
     await connectDB();
     console.log(`🚀 Server berjalan di http://${host}:${port}`);
 });

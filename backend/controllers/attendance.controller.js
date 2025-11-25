@@ -1,48 +1,5 @@
 import Attendance from "../models/attendance.model.js";
 
-// export const attendance = async (req, res) => {
-//     try {
-//         const { status, latitude, longitude } = req.body;
-
-//         const userId = req.user;
-
-//         if (!latitude || !longitude) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Latitude dan Longitude diperlukan"
-//             });
-//         }
-
-//         const location = {
-//             type: "Point",
-//             coordinates: [longitude, latitude]
-//         };
-
-//         const newAttendance = new Attendance({
-//             user: userId,
-//             status,
-//             location
-//         });
-
-//         await newAttendance.save();
-
-//         const populate = await Attendance.findById(newAttendance._id).populate('user', 'name email');
-
-//         res.status(201).json({
-//             success: true,
-//             message: "Absensi berhasil dicatat",
-//             attendance: populate
-//         });
-
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: "Terjadi kesalahan internal di server",
-//             error: error.message
-//         });
-//     }
-// };
-
 export const attendance = async (req, res) => {
     try {
         const { latitude, longitude } = req.body;
@@ -90,14 +47,11 @@ export const attendance = async (req, res) => {
             return res.status(201).json({
                 success: true,
                 message: "Absen Masuk berhasil dicatat",
-                attendance: populatedRecord
-            });
-        }
-
-        if (attendanceRecord.clockOut) {
-            return res.status(400).json({
-                success: false,
-                message: "Anda sudah melakukan absen pulang hari ini"
+                user: populatedRecord.user,
+                attendance: {
+                    clockIn: now,
+                    clockInLocation: location
+                }, 
             });
         }
 
@@ -111,7 +65,11 @@ export const attendance = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Absen Pulang berhasil dicatat",
-            attendance: populatedRecord
+            user: populatedRecord.user,
+            attendance: { 
+                clockOut: attendanceRecord.clockOut, 
+                clockOutLocation: attendanceRecord.clockOutLocation 
+            }, 
         });
 
     } catch (error) {
@@ -125,11 +83,25 @@ export const attendance = async (req, res) => {
 
 export const getAttendances = async (req, res) => {
     try {
-        const attendances = await Attendance.find().populate('user', 'name email');
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0); 
+
+        const endOfDay = new Date(startOfDay);
+        endOfDay.setHours(23, 59, 59, 999); 
+
+        const attendances = await Attendance.find({
+            date: {
+                $gte: startOfDay,
+                $lte: endOfDay   
+
+            }
+        }).populate('user', 'name email').sort({ clockIn: -1 }); 
 
         res.status(200).json({
             success: true,
-            attendances
+            count: attendances.length,
+            message: `Data absensi hari ini (${startOfDay.toLocaleDateString('id-ID')}) berhasil diambil`,
+            attendances: attendances
         });
     }
     catch (error) {

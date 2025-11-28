@@ -23,3 +23,13 @@ app.listen(port, host, async () => {
     await connectDB();
     console.log(`🚀 Server berjalan di http://${host}:${port}`);
 });
+app.get('/ping', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date(),
+        message: 'Server is running' 
+    });
+});
+app.get('/health', (req, res) => {
+    res.send('OK');
+});

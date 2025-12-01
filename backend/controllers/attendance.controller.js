@@ -83,6 +83,8 @@ export const attendance = async (req, res) => {
 
 export const getAttendances = async (req, res) => {
     try {
+        const userId = req.user._id; // Ambil dari middleware auth
+        
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); 
 
@@ -90,17 +92,17 @@ export const getAttendances = async (req, res) => {
         endOfDay.setHours(23, 59, 59, 999); 
 
         const attendances = await Attendance.find({
+            user: userId, // ✅  FILTER INI
             date: {
                 $gte: startOfDay,
                 $lte: endOfDay   
-
             }
         }).populate('user', 'name email').sort({ clockIn: -1 }); 
 
         res.status(200).json({
             success: true,
             count: attendances.length,
-            message: `Data absensi hari ini (${startOfDay.toLocaleDateString('id-ID')}) berhasil diambil`,
+            message: `Data absensi Anda hari ini berhasil diambil`,
             attendances: attendances
         });
     }

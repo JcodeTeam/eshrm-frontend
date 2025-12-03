@@ -2,25 +2,16 @@ import Permission from "../models/permission.model.js";
 
 export const createPermission = async (req, res) => {
     try {
-        const userId = req.user._id; // Didapat dari middleware auth
+        const userId = req.user._id; 
         const { type, date, reason } = req.body;
-        
-        // Cek apakah ada file yang diupload via Multer
-        // req.file otomatis ada jika upload berhasil
+
         const attachmentPath = req.file ? req.file.path : null;
 
-        // Validasi input dasar
         if (!type || !date || !reason) {
             return res.status(400).json({
                 success: false,
-                message: "Semua field (tipe, tanggal, alasan) wajib diisi."
+                message: "Semua field wajib diisi."
             });
-        }
-
-        // Khusus Sakit, disarankan ada bukti (opsional tergantung aturan perusahaan)
-        if (type === 'sick' && !attachmentPath) {
-            // Bisa di-uncomment jika ingin mewajibkan bukti sakit
-            // return res.status(400).json({ message: "Bukti sakit wajib diupload." });
         }
 
         const newPermission = new Permission({
@@ -28,7 +19,7 @@ export const createPermission = async (req, res) => {
             type, // 'sick' atau 'permit'
             date: new Date(date),
             reason,
-            attachment: attachmentPath, // Simpan path file (misal: uploads/file-123.jpg)
+            attachment: attachmentPath, 
         });
 
         await newPermission.save();
@@ -53,7 +44,6 @@ export const getUserPermissions = async (req, res) => {
     try {
         const userId = req.user._id;
         
-        // Ambil list izin user tersebut, urutkan dari yang terbaru
         const permissions = await Permission.find({ user: userId })
             .sort({ createdAt: -1 });
 

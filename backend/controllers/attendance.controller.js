@@ -81,7 +81,7 @@ export const attendance = async (req, res) => {
     }
 };
 
-export const getAttendances = async (req, res) => {
+export const getUserAttendances = async (req, res) => {
     try {
         const userId = req.user._id; // Ambil dari middleware auth
         

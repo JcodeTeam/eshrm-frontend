@@ -8,7 +8,7 @@ const permissionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["sick", "permit"], // sick = sakit, permit = izin
+        enum: ["sick", "permit"], 
         required: true,
     },
     date: {
@@ -20,7 +20,7 @@ const permissionSchema = new mongoose.Schema({
         required: true,
     },
     attachment: {
-        type: String, // Menyimpan path/url file bukti
+        type: String, 
         default: null
     },
     status: {

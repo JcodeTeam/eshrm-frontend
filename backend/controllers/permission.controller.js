@@ -78,3 +78,43 @@ export const getPermissions = async (req, res) => {
         });
     }
 };
+
+export const updatePermissionStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        const validStatuses = ['pending', 'approved', 'rejected'];
+
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status tidak valid."
+            });
+        }
+
+        const permission = await Permission.findById(id);
+        if (!permission) {
+            return res.status(404).json({
+                success: false,
+                message: "Izin tidak ditemukan."
+            });
+        }
+
+        permission.status = status;
+        await permission.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Status izin berhasil diperbarui.",
+            data: permission
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Gagal memperbarui status izin.",
+            error: error.message
+        });
+    }
+};

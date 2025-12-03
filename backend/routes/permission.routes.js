@@ -5,7 +5,7 @@ import { authorize } from '../middleware/auth.middleware.js';
 
 const permissionRoutes = express.Router();
 
-permissionRoutes.post('/', authorize, upload.single('attachment'), createPermission);
+permissionRoutes.post('/', authorize, upload, createPermission);
 
 permissionRoutes.get('/', authorize, getUserPermissions);
 

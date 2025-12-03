@@ -83,7 +83,7 @@ export const attendance = async (req, res) => {
 
 export const getUserAttendances = async (req, res) => {
     try {
-        const userId = req.user._id; // Ambil dari middleware auth
+        const userId = req.user._id;
         
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0); 
@@ -92,7 +92,7 @@ export const getUserAttendances = async (req, res) => {
         endOfDay.setHours(23, 59, 59, 999); 
 
         const attendances = await Attendance.find({
-            user: userId, // ✅  FILTER INI
+            user: userId, 
             date: {
                 $gte: startOfDay,
                 $lte: endOfDay   
@@ -103,6 +103,27 @@ export const getUserAttendances = async (req, res) => {
             success: true,
             count: attendances.length,
             message: `Data absensi Anda hari ini berhasil diambil`,
+            attendances: attendances
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan internal di server",
+            error: error.message
+        });
+    }
+};
+
+export const getAttendances = async (req, res) => {
+    try {
+        const attendances = await Attendance.find()
+        .populate('user', 'name email').sort({ clockIn: -1, createdAt: -1 }); 
+
+        res.status(200).json({
+            success: true,
+            count: attendances.length,
+            message: `Data absensi`,
             attendances: attendances
         });
     }

@@ -59,3 +59,22 @@ export const getUserPermissions = async (req, res) => {
         });
     }
 };
+
+export const getPermissions = async (req, res) => {
+    try {
+        
+        const permissions = await Permission.find()
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: permissions
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Gagal mengambil riwayat izin.",
+            error: error.message
+        });
+    }
+};

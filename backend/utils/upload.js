@@ -12,7 +12,7 @@ const storage = multer.diskStorage(
     {
         destination: (req, file, cb) => {
             if (!fs.existsSync(UPLOAD_DIR)) {
-                console.log("tidak ada directory", UPLOAD_DIR);
+                fs.mkdirSync(UPLOAD_DIR, { recursive: true });
             }
             cb(null, UPLOAD_DIR);
         },

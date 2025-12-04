@@ -1,5 +1,4 @@
 import express from 'express';
-// import connectDB from './config/db.js';
 import { PORT } from './config/env.js';
 import appMiddleware from './middleware/middleware.js';
 import faceRoutes from './routes/face.routes.js';
@@ -24,6 +23,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, host, async () => {
-    // await connectDB();
     console.log(`🚀 Server berjalan di http://${host}:${port}`);
 });

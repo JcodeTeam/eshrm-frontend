@@ -1,5 +1,6 @@
 import express from 'express';
 import { PORT } from './config/env.js';
+import './models/index.js';
 import appMiddleware from './middleware/middleware.js';
 import faceRoutes from './routes/face.routes.js';
 import authRoutes from './routes/auth.routes.js';

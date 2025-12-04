@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { execQuery } from '../config/db.js';
+import User from '../models/user.model.js';
 import { JWT_SECRET } from '../config/env.js';
 
 export const authorize = async (req, res, next) => {
@@ -16,8 +16,9 @@ export const authorize = async (req, res, next) => {
 
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        const users = await execQuery('SELECT id, name, email, role FROM users WHERE id = ?', [decoded.id]);
-        const user = users[0];
+        const user = await User.findByPk(decoded.id, {
+            attributes: ['id', 'name', 'email', 'role', 'created_at']
+        });
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User tidak ditemukan" });

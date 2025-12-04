@@ -1,46 +1,33 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { execQuery } from '../config/db.js';
+import User from '../models/user.model.js';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/env.js';
 
 export const register = async (req, res) => {
-
     try {
         const { name, email, password, role } = req.body;
 
-        const existingUser = await execQuery('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingUser.length > 0) {
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
             return res.status(400).json({ success: false, message: 'Email sudah terdaftar' });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const sql = `
-            INSERT INTO users (name, email, password, role, image_url, image_public_id) 
-            VALUES (?, ?, ?, ?, ?, ?)
-        `;
-
-        const params = [
+        const newUser = await User.create({
             name,
             email,
-            hashedPassword,
-            role || 'user',
-            req.body.image?.url || null,
-            req.body.image?.public_id || null
-        ];
-
-        const result = await execQuery(sql, params);
-        const newUserId = result.insertId;
+            password,
+            role: role || 'user',
+            image_url: req.body.image?.url || null, 
+            image_public_id: req.body.image?.public_id || null
+        });
 
         res.status(201).json({
             success: true,
             message: 'Registrasi berhasil',
             user: {
-                id: newUserId,
-                name: name,
-                email: email,
-                role: role
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role
             }
         });
 
@@ -57,16 +44,9 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const users = await execQuery('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
-        const user = users[0];
+        const user = await User.findOne({ where: { email } });
 
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Email atau password salah' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
+        if (!user || !(await user.comparePassword(password))) {
             return res.status(401).json({ success: false, message: 'Email atau password salah' });
         }
 
@@ -80,6 +60,7 @@ export const login = async (req, res) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
             },
         });
 
@@ -101,9 +82,12 @@ export const whoAmI = async (req, res) => {
 
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        const sql = 'SELECT id, name, email, role, created_at FROM users WHERE id = ?';
-        const users = await execQuery(sql, [decoded.id]);
-        const user = users[0];
+        const user = await User.findByPk(decoded.id, 
+            {
+                attributes: ['id', 'name', 'email', 'role', 'created_at']
+            }
+        ); 
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User tidak ditemukan' });
         }

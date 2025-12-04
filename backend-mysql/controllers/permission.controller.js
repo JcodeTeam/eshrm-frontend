@@ -1,12 +1,5 @@
-import { execQuery } from "../config/db.js";
-
-const formatDateToSQLDate = (date) => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
+import Permission from "../models/permission.model.js";
+import User from "../models/user.model.js";
 
 export const createPermission = async (req, res) => {
     try {
@@ -22,39 +15,18 @@ export const createPermission = async (req, res) => {
             });
         }
 
-        const permissionDate = formatDateToSQLDate(date);
-
-        const sql = `
-            INSERT INTO permissions 
-                (user_id, type, permission_date, reason, attachment, status)
-            VALUES (?, ?, ?, ?, ?, 'pending')
-        `;
-        const params = [
-            userId,
-            type,
-            permissionDate,
-            reason,
-            attachmentPath
-        ];
-
-        const result = await execQuery(sql, params);
-        const newPermissionId = result.insertId;
-
-        const newPermissionData = {
-            id: newPermissionId,
+        const newPermission = await Permission.create({
             user_id: userId,
-            type,
-            permission_date: permissionDate,
+            type, // 'sick' atau 'permit'
+            permission_date: new Date(date),
             reason,
-            attachment: attachmentPath,
-            status: 'pending',
-            created_at: new Date()
-        };
+            attachment: attachmentPath, 
+        });
 
         res.status(201).json({
             success: true,
             message: "Pengajuan berhasil dikirim.",
-            data: newPermissionData
+            data: newPermission
         });
 
     } catch (error) {
@@ -71,12 +43,10 @@ export const getUserPermissions = async (req, res) => {
     try {
         const userId = req.user.id;
         
-        const sql = `
-            SELECT * FROM permissions 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
-        `;
-        const permissions = await execQuery(sql, [userId]);
+        const permissions = await Permission.findAll({ 
+            where: { user_id: userId },
+            order: [['created_at', 'DESC']]
+        })
 
         res.status(200).json({
             success: true,
@@ -94,26 +64,15 @@ export const getUserPermissions = async (req, res) => {
 export const getPermissions = async (req, res) => {
     try {
         
-        const sql = `
-            SELECT p.*, u.name AS user_name, u.email AS user_email
-            FROM permissions p
-            JOIN users u ON p.user_id = u.id
-            ORDER BY p.created_at DESC
-        `;
-
-        const rawPermissions = await execQuery(sql);
-
-        const permissions = rawPermissions.map(p => ({
-            id: p.id,
-            user: { id: p.user_id, name: p.user_name, email: p.user_email },
-            type: p.type,
-            date: p.permission_date,
-            reason: p.reason,
-            attachment: p.attachment,
-            status: p.status,
-            createdAt: p.created_at,
-            updatedAt: p.updated_at
-        }));
+        const permissions = await Permission.findAll({
+            include: [{
+                model: User,
+                as: 'User',
+                attributes: ['name', 'email'], 
+                required: true
+            }],
+            order: [['created_at', 'DESC']]
+        })
 
         res.status(200).json({
             success: true,
@@ -142,30 +101,21 @@ export const updatePermissionStatus = async (req, res) => {
             });
         }
 
-        const findSql = 'SELECT * FROM permissions WHERE id = ?';
-        const permissions = await execQuery(findSql, [id]);
-        const permission = permissions[0];
+        const [rowsUpdated] = await Permission.update(
+            { status: status },
+            { where: { id: id } }
+        );
 
-        if (!permission) {
-            return res.status(404).json({
-                success: false,
-                message: "Izin tidak ditemukan."
-            });
+        if (rowsUpdated === 0) {
+            return res.status(404).json({ success: false, message: "Izin tidak ditemukan." });
         }
 
-        const updateSql = 'UPDATE permissions SET status = ? WHERE id = ?';
-        await execQuery(updateSql, [status, id]);
-
-        const updatedPermissionData = {
-            ...permission,
-            status: status,
-            updated_at: new Date() 
-        };
+        const updatedPermission = await Permission.findByPk(id);
 
         res.status(200).json({
             success: true,
             message: "Status izin berhasil diperbarui.",
-            data: updatedPermissionData
+            data: updatedPermission
         });
 
     } catch (error) {
